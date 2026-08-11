@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Tag, AlertCircle, FileText, CheckCircle } from 'lucide-react';
+import { X, Calendar, Tag, AlertCircle, Check, Clock } from 'lucide-react';
 
 export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
   const [title, setTitle] = useState('');
@@ -8,6 +8,7 @@ export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
   const [category, setCategory] = useState('Work');
   const [customCategory, setCustomCategory] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [estimatedTime, setEstimatedTime] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
         setCustomCategory('');
       }
       setDueDate(taskToEdit.dueDate || '');
+      setEstimatedTime(taskToEdit.estimatedTime || '');
     } else {
       resetForm();
     }
@@ -39,7 +41,23 @@ export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
     setCategory('Work');
     setCustomCategory('');
     setDueDate('');
+    setEstimatedTime('');
     setError('');
+  };
+
+  const handleQuickDate = (preset) => {
+    const today = new Date();
+    if (preset === 'today') {
+      setDueDate(today.toISOString().split('T')[0]);
+    } else if (preset === 'tomorrow') {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      setDueDate(tomorrow.toISOString().split('T')[0]);
+    } else if (preset === 'next-week') {
+      const nextWeek = new Date(today);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      setDueDate(nextWeek.toISOString().split('T')[0]);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -58,7 +76,10 @@ export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
       priority,
       category: finalCategory,
       dueDate: dueDate || null,
+      estimatedTime: estimatedTime || null,
       completed: taskToEdit ? taskToEdit.completed : false,
+      pinned: taskToEdit ? taskToEdit.pinned : false,
+      subtasks: taskToEdit ? taskToEdit.subtasks || [] : [],
       createdAt: taskToEdit ? taskToEdit.createdAt : new Date().toISOString()
     });
 
@@ -71,21 +92,19 @@ export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{taskToEdit ? 'Edit Task' : 'Create New Task'}</h2>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-            <X size={20} />
+          <h2>{taskToEdit ? 'Edit task' : 'New task'}</h2>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close">
+            <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
-            <label htmlFor="task-title">
-              Task Title <span className="required-star">*</span>
-            </label>
+            <label htmlFor="task-title">What needs to be done?</label>
             <input
               id="task-title"
               type="text"
-              placeholder="e.g. Complete quarterly report presentation"
+              placeholder="Task title..."
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
@@ -94,16 +113,14 @@ export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
               className={`form-input ${error ? 'input-error' : ''}`}
               autoFocus
             />
-            {error && <span className="error-message"><AlertCircle size={14} /> {error}</span>}
+            {error && <span className="error-message"><AlertCircle size={13} /> {error}</span>}
           </div>
 
           <div className="form-group">
-            <label htmlFor="task-description">
-              Description <span className="optional-text">(Optional)</span>
-            </label>
+            <label htmlFor="task-description">Notes or details <span className="optional">(optional)</span></label>
             <textarea
               id="task-description"
-              placeholder="Add key notes, subtasks, or links..."
+              placeholder="Add extra context or notes..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -117,24 +134,24 @@ export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
               <div className="priority-options">
                 <button
                   type="button"
-                  className={`priority-option-btn priority-low ${priority === 'low' ? 'selected' : ''}`}
+                  className={`priority-btn priority-low ${priority === 'low' ? 'selected' : ''}`}
                   onClick={() => setPriority('low')}
                 >
-                  🟢 Low
+                  Low
                 </button>
                 <button
                   type="button"
-                  className={`priority-option-btn priority-medium ${priority === 'medium' ? 'selected' : ''}`}
+                  className={`priority-btn priority-medium ${priority === 'medium' ? 'selected' : ''}`}
                   onClick={() => setPriority('medium')}
                 >
-                  🟡 Medium
+                  Medium
                 </button>
                 <button
                   type="button"
-                  className={`priority-option-btn priority-high ${priority === 'high' ? 'selected' : ''}`}
+                  className={`priority-btn priority-high ${priority === 'high' ? 'selected' : ''}`}
                   onClick={() => setPriority('high')}
                 >
-                  🔴 High
+                  High
                 </button>
               </div>
             </div>
@@ -156,7 +173,7 @@ export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
               {category === 'custom' && (
                 <input
                   type="text"
-                  placeholder="Enter category name"
+                  placeholder="Category name"
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
                   className="form-input custom-cat-input"
@@ -165,29 +182,46 @@ export function TaskModal({ isOpen, onClose, onSave, taskToEdit, categories }) {
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="task-due-date">
-              Due Date <span className="optional-text">(Optional)</span>
-            </label>
-            <div className="date-input-wrapper">
-              <Calendar size={18} className="calendar-icon" />
-              <input
-                id="task-due-date"
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="form-input date-input"
-              />
+          <div className="form-row">
+            <div className="form-group flex-1">
+              <label htmlFor="task-due-date">Due date</label>
+              <div className="date-field-wrapper">
+                <Calendar size={14} className="calendar-icon" />
+                <input
+                  id="task-due-date"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="form-input date-input"
+                />
+              </div>
+            </div>
+
+            <div className="form-group flex-1">
+              <label htmlFor="task-est-time">Est. Time</label>
+              <select
+                id="task-est-time"
+                value={estimatedTime}
+                onChange={(e) => setEstimatedTime(e.target.value)}
+                className="form-select"
+              >
+                <option value="">No Estimate</option>
+                <option value="15 min">15 mins</option>
+                <option value="30 min">30 mins</option>
+                <option value="45 min">45 mins</option>
+                <option value="1 hr">1 hour</option>
+                <option value="2 hrs">2 hours</option>
+              </select>
             </div>
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn-secondary" onClick={onClose}>
+            <button type="button" className="btn-cancel" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary">
-              <CheckCircle size={18} />
-              <span>{taskToEdit ? 'Save Changes' : 'Create Task'}</span>
+            <button type="submit" className="btn-save">
+              <Check size={16} />
+              <span>{taskToEdit ? 'Save Changes' : 'Add Task'}</span>
             </button>
           </div>
         </form>

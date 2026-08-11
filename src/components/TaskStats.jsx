@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Clock, AlertCircle, BarChart2 } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 
 export function TaskStats({ tasks }) {
   const total = tasks.length;
@@ -11,68 +11,49 @@ export function TaskStats({ tasks }) {
 
   return (
     <section className="stats-section">
-      <div className="stats-card main-progress-card">
-        <div className="stats-header">
-          <div className="stats-title">
-            <BarChart2 size={18} />
-            <span>Progress Overview</span>
+      <div className="stats-card">
+        <div className="stats-top">
+          <div className="stats-headline">
+            {total === 0 ? (
+              <span>No tasks added yet</span>
+            ) : completed === total ? (
+              <span className="all-done-msg">✨ Everything's done for now! Take a break.</span>
+            ) : (
+              <span>You have <strong>{pending} task{pending === 1 ? '' : 's'}</strong> left to complete</span>
+            )}
           </div>
-          <span className="percentage-text">{percentage}% Done</span>
+          <span className="progress-percentage">{percentage}% done</span>
         </div>
+
         <div className="progress-bar-track">
           <div 
             className="progress-bar-fill"
             style={{ width: `${percentage}%` }}
           />
         </div>
-        <p className="stats-hint">
-          {total === 0 
-            ? 'No tasks yet. Create one to get started!' 
-            : completed === total 
-              ? '🎉 All tasks completed! Great job!' 
-              : `${pending} task${pending === 1 ? '' : 's'} remaining`}
-        </p>
-      </div>
 
-      <div className="stats-grid">
-        <div className="stat-box total-box">
-          <div className="stat-icon total-icon">
-            <Clock size={18} />
+        <div className="stats-chips">
+          <div className="stat-chip">
+            <span className="chip-value">{total}</span>
+            <span className="chip-label">Total</span>
           </div>
-          <div className="stat-info">
-            <span className="stat-value">{total}</span>
-            <span className="stat-label">Total Tasks</span>
+          <div className="stat-chip completed">
+            <CheckCircle2 size={14} />
+            <span className="chip-value">{completed}</span>
+            <span className="chip-label">Done</span>
           </div>
-        </div>
-
-        <div className="stat-box completed-box">
-          <div className="stat-icon completed-icon">
-            <CheckCircle2 size={18} />
+          <div className="stat-chip pending">
+            <Clock size={14} />
+            <span className="chip-value">{pending}</span>
+            <span className="chip-label">Pending</span>
           </div>
-          <div className="stat-info">
-            <span className="stat-value">{completed}</span>
-            <span className="stat-label">Completed</span>
-          </div>
-        </div>
-
-        <div className="stat-box pending-box">
-          <div className="stat-icon pending-icon">
-            <Clock size={18} />
-          </div>
-          <div className="stat-info">
-            <span className="stat-value">{pending}</span>
-            <span className="stat-label">Pending</span>
-          </div>
-        </div>
-
-        <div className="stat-box urgent-box">
-          <div className="stat-icon urgent-icon">
-            <AlertCircle size={18} />
-          </div>
-          <div className="stat-info">
-            <span className="stat-value">{highPriority}</span>
-            <span className="stat-label">High Priority</span>
-          </div>
+          {highPriority > 0 && (
+            <div className="stat-chip high-priority">
+              <AlertCircle size={14} />
+              <span className="chip-value">{highPriority}</span>
+              <span className="chip-label">High Priority</span>
+            </div>
+          )}
         </div>
       </div>
     </section>

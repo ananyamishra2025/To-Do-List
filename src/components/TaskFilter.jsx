@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X, SlidersHorizontal, ArrowUpDown, Tag } from 'lucide-react';
+import { Search, X, Tag, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 
 export function TaskFilter({
   searchQuery,
@@ -17,10 +17,10 @@ export function TaskFilter({
   return (
     <section className="filter-toolbar">
       <div className="search-bar-wrapper">
-        <Search size={18} className="search-icon" />
+        <Search size={16} className="search-icon" />
         <input
           type="text"
-          placeholder="Search tasks by title or description..."
+          placeholder="Filter or search tasks..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="search-input"
@@ -31,7 +31,7 @@ export function TaskFilter({
             onClick={() => setSearchQuery('')}
             title="Clear search"
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         )}
       </div>
@@ -60,7 +60,7 @@ export function TaskFilter({
 
         <div className="select-dropdowns">
           <div className="select-wrapper">
-            <Tag size={14} className="select-icon" />
+            <Tag size={13} className="select-icon" />
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
@@ -74,21 +74,21 @@ export function TaskFilter({
           </div>
 
           <div className="select-wrapper">
-            <SlidersHorizontal size={14} className="select-icon" />
+            <SlidersHorizontal size={13} className="select-icon" />
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
               className="custom-select"
             >
               <option value="all">All Priorities</option>
-              <option value="high">🔴 High Priority</option>
-              <option value="medium">🟡 Medium Priority</option>
-              <option value="low">🟢 Low Priority</option>
+              <option value="high">High Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="low">Low Priority</option>
             </select>
           </div>
 
           <div className="select-wrapper">
-            <ArrowUpDown size={14} className="select-icon" />
+            <ArrowUpDown size={13} className="select-icon" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -96,9 +96,9 @@ export function TaskFilter({
             >
               <option value="createdAt-desc">Newest First</option>
               <option value="createdAt-asc">Oldest First</option>
-              <option value="dueDate-asc">Due Date (Earliest)</option>
-              <option value="priority-high">Priority (High to Low)</option>
-              <option value="title-asc">Title (A-Z)</option>
+              <option value="dueDate-asc">Due Date</option>
+              <option value="priority-high">Priority (High first)</option>
+              <option value="title-asc">Title (A to Z)</option>
             </select>
           </div>
         </div>
