@@ -63,10 +63,11 @@ const DEFAULT_TASKS = [
 const DEFAULT_CATEGORIES = ['Work', 'Personal', 'Shopping', 'Health', 'Errands', 'Ideas'];
 
 export function App() {
-  const [tasks, setTasks] = useLocalStorage('focus_tasks_v2', DEFAULT_TASKS);
-  const [categories, setCategories] = useLocalStorage('focus_categories_v2', DEFAULT_CATEGORIES);
+  const [tasks, setTasks] = useLocalStorage('focus_tasks_v3', DEFAULT_TASKS);
+  const [categories, setCategories] = useLocalStorage('focus_categories_v3', DEFAULT_CATEGORIES);
   const [theme, setTheme] = useLocalStorage('focus_theme', 'dark');
   const [soundEnabled, setSoundEnabled] = useLocalStorage('focus_sound', true);
+  const [streakCount] = useLocalStorage('focus_streak', 3);
 
   // Modals & Overlays State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -92,7 +93,6 @@ export function App() {
   // Keyboard Shortcuts Listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Don't trigger shortcuts if user is typing in an input or textarea
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
         if (e.key === 'Escape') {
           document.activeElement.blur();
@@ -147,6 +147,12 @@ export function App() {
     setToast({ message, type });
   };
 
+  // Restore tasks from JSON
+  const handleImportTasks = (importedTasks) => {
+    setTasks(importedTasks);
+    showToast(`Restored ${importedTasks.length} tasks successfully!`, 'success');
+  };
+
   // Open Modal for New Task
   const handleOpenAddModal = () => {
     setTaskToEdit(null);
@@ -166,11 +172,9 @@ export function App() {
     }
 
     if (taskData.id) {
-      // Edit existing task
       setTasks(prev => prev.map(t => t.id === taskData.id ? { ...t, ...taskData } : t));
       showToast('Task updated', 'success');
     } else {
-      // Add new task
       const newTask = {
         ...taskData,
         id: `task-${Date.now()}`
@@ -225,7 +229,6 @@ export function App() {
           return st;
         });
 
-        // Check if all subtasks are complete
         const allDone = updatedSubtasks.length > 0 && updatedSubtasks.every(st => st.completed);
         return { ...t, subtasks: updatedSubtasks, completed: allDone ? true : t.completed };
       }
@@ -292,7 +295,6 @@ export function App() {
         return true;
       })
       .sort((a, b) => {
-        // Pinned tasks always stay at top
         if (a.pinned && !b.pinned) return -1;
         if (!a.pinned && b.pinned) return 1;
 
@@ -322,6 +324,8 @@ export function App() {
   return (
     <div className="app-container">
       <Navbar
+        tasks={tasks}
+        onImportTasks={handleImportTasks}
         theme={theme}
         toggleTheme={toggleTheme}
         soundEnabled={soundEnabled}
@@ -334,7 +338,7 @@ export function App() {
       />
 
       <main className="main-content">
-        <TaskStats tasks={tasks} />
+        <TaskStats tasks={tasks} streakCount={streakCount} />
 
         <TaskFilter
           searchQuery={searchQuery}
